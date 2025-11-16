@@ -15,31 +15,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-/**
- * 範例名稱：OllamaGenerateExample（使用 OkHttp3 版本）
- *
- * 說明：
- *  本程式示範如何使用 OkHttp3 HTTP 客戶端函式庫，
- *  向本機或同區網的 Ollama 伺服器發送 POST 請求，
- *  呼叫 /api/generate 端點以生成文字回應結果。
- *
- *  對應的 curl 範例如下：
- *  curl -X POST http://localhost:11434/api/generate \
- *   -H "Content-Type: application/json" \
- *   -d "{\"model\":\"qwen3:0.6b\",\"prompt\":\"請用中文介紹 Java 程式語言\",\"stream\":false}"
- *
- * 注意：
- *  - OkHttp3 是業界標準的 HTTP 客戶端函式庫
- *  - 程式碼簡潔、效能優異、支援同步與非同步請求
- *  - 適合 Android 開發與企業級應用
- *
- * 適用環境：
- *  - Java 8 或以上版本
- *  - OkHttp3 4.12.0 或以上版本
- *  - 已啟動 Ollama Server，且服務運行於 http://localhost:11434
- */
 
-public class OllamaGenerateExample {
+public class TwseData {
 	// 定義 ollama web api url
 	private static final String GENERATE_WEB_API = "http://localhost:11434/api/generate";
 	
@@ -50,16 +27,30 @@ public class OllamaGenerateExample {
 	public static void main(String[] args) throws Exception {
 		Scanner scanner = new Scanner(System.in);
 		
-		// 選擇模型(0: qwen3:0.6b, 1: phi3:latest, 2: qwen2.5:0.5b)
+		// 選擇模型(0: qwen3:0.6b, 1: phi3:latest, 2: qwen2.5:0.5b )
 		String[] modelNames = {"qwen3:0.6b", "phi3:latest", "qwen2.5:0.5b"};
 		System.out.print("模型選擇(0: qwen3:0.6b, 1: phi3:latest, 2: qwen2.5:0.5b) => ");
 		int modelIndex = scanner.nextInt();
 		String modelName = modelNames[modelIndex];
 		
+		/*
+		String finaceDate = """
+				有一檔股票財金資訊如下: 證券代號=2330 證券名稱=台積電 收盤價=1460.00 殖利率(%)=1.16 股利年度=113 本益比=25.94 股價淨值比=8.26 財報年/季=114/2
+				""";
+		*/
+		
+		System.out.print("請輸入股票代號(例如: 2330) => ");
+		String symbol = scanner.next();
+		String finaceDate = TwseDataDownload.getStringDataWithPrompt(symbol);
+		
 		// 問題文字
 		System.out.println("請輸入問題(不要有空格) => ");
 		String question = scanner.next();
 		
+		// question 前面要加上 finaceData <= prompt(提示語, 給 AI 的說明書, 讓 AI 更具有充分資料解決問題)
+		String prompt = finaceDate + "請問: " + question; 
+		// 消除換行符號
+		prompt = prompt.replaceAll("\n", "");
 		
 		// 是否支援 stream
 		Boolean supportSTREAM = true;
@@ -74,7 +65,7 @@ public class OllamaGenerateExample {
 					"stream":%b
 				}
 				""";
-		jsonBody = String.format(jsonBody, modelName, question, supportSTREAM);
+		jsonBody = String.format(jsonBody, modelName, prompt, supportSTREAM);
 		System.out.printf("要發送的 JSON: %n%s%n", jsonBody);
 		
 		//---------------------------------------------------------------------------------
