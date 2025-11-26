@@ -1,0 +1,100 @@
+package ollama.chat;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+
+import ollama.chat.QueryChatExecutor.QueryCallback;
+
+/**
+ * 利用 QueryChatExecutor 完成本範例
+ *  */
+public class OllamaChatCLI {
+	// 是否已完成
+	private static boolean isComplete = false;
+	
+	public static void main(String[] args) throws Exception {
+		Scanner scanner = new Scanner(System.in);
+		QueryChatExecutor executor = new QueryChatExecutor();
+		
+		// 選擇模型
+		String[] modelNames = {"qwen3:0.6b", "phi3:latest", "qwen2.5:0.5b"};
+		System.out.print("模型選擇(0: qwen3:0.6b, 1: phi3:latest, 2: qwen2.5:0.5b) => ");
+		
+		int modelIndex = scanner.nextInt();
+		String modelName = modelNames[modelIndex];
+		
+		// 建立對話訊息列表(message)
+		List<Map<String, String>> messages = new ArrayList();
+		
+		System.out.println("對話開始, 輸入 q/quit 結束.");
+		
+		// 利用 QueryChatExecutor 與 AI 持續對話
+		while(true) {
+			System.out.print("\n你說:");
+			String userInput = scanner.next();
+			
+			if(userInput.equalsIgnoreCase("q") || userInput.equalsIgnoreCase("quit")) {
+				System.out.println("對話結束");
+				break;
+			}
+			
+			// 加入用戶文字到對話歷史中
+			Map<String, String> userMessage = new HashMap<>();
+			userMessage.put("role", "user");
+			userMessage.put("content", userInput);
+			messages.add(userMessage);
+			
+			System.out.print("Ollama 回復: ");
+			
+			// 實現 QueryChatExecutor.QueryCallBack
+			QueryCallback callback = new QueryCallback() {
+				
+				@Override
+				public void onresponseChar(char ch) {
+					// 逐字回覆
+					System.out.print(ch);
+					
+				}
+				
+				@Override
+				public void onHttpError(int statusCode) {
+					System.err.println("\n HTTP 狀態錯誤:" + statusCode);
+					
+				}
+				
+				@Override
+				public void onError(String message) {
+					System.out.println("\n錯誤: " + message);
+					
+				}
+				
+				@Override
+				public void onComplete() {
+					isComplete = true;
+					System.out.println(); // 完成後換行
+					
+				}
+			};
+			
+			// 呼叫 QueryChatExecutor
+		    executor.execute(modelName, messages, callback);
+		
+		    // 等待 isComplete = true
+		    // 每隔一秒鐘檢查一次
+		    while(!isComplete == true) {
+		    	try {
+		    		Thread.sleep(1000);
+		    	}catch (Exception e) {
+					
+				}
+		    }
+		    
+		}
+	
+		scanner.close();
+	}
+	
+}
