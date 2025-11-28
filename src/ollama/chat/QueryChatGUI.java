@@ -22,6 +22,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import ollama.chat.QueryChatExecutor.QueryCallback;
+import ollama.chat.db.DataFetcher;
 
 
 /**
@@ -54,21 +55,7 @@ public class QueryChatGUI extends JFrame {
     };
 
     // 預設提問列表，設計為展示聊天上下文記憶特性的例子劇本
-    private static final String[] ASK_DEFAULT = {
-    		"請選擇",
-    		"我的名字是阿正,請你記住",
-    		"請問我叫甚麼名字",
-    		"我喜歡的運動是籃球,請你記住",
-    		"我喜歡甚麼運動",
-    		"我生日是6/14號,請你記住",
-    		"我生日是甚麼時候",
-    		"我喜歡吃炸魷魚,請你記住",
-    		"我喜歡吃什麼",
-    		"我住在台中,請你記住",
-    		"我住在哪",
-    		"我喜歡的人是娜娜,請你記住",
-    		"我喜歡的人是誰"
-    };
+    private static final String[] ASK_DEFAULT = DataFetcher.loadPromptsFromDB();
     
  // 用於保存整個多輪聊天歷史，格式為List<Map<String,String>>，
     // 每條訊息包含role(user或assistant)與content文字。
@@ -222,6 +209,11 @@ public class QueryChatGUI extends JFrame {
 				assistantMessage.put("role", "assistant");
 				assistantMessage.put("content", assistantContent.toString());
 				messageHistory.add(assistantMessage);
+				
+				// log 儲存
+				String userInput = askField.getText();
+				String botMessage = assistantContent.toString();
+				DataFetcher.saveLog(userInput, botMessage);
 				
 				resultArea.append("\n\n=== 查詢完成 === \n");
 				disableInputs(false);
