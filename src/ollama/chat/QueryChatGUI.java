@@ -38,7 +38,9 @@ public class QueryChatGUI extends JFrame {
     private JTextField askField;              // 用戶輸入提問欄
     private JButton queryBtn;                 // 查詢按鈕
     private JTextArea resultArea;             // 回應結果顯示區域
-
+    // homework
+    private ModelTags modelTags = new ModelTags();
+    
     // 查詢中動畫的幀陣列與索引，用於顯示查詢中變化文字
     private Timer animTimer;
     private String[] loadingFrames = {"查詢中   ", "查詢中.  ", "查詢中.. ", "查詢中..."};
@@ -50,9 +52,7 @@ public class QueryChatGUI extends JFrame {
     // 支援選擇的模型名稱
     // homework
     // MODEL_NAMES 可透過 http://localhost:11434/api/tags 得到最新模型資訊
-    private static final String[] MODEL_NAMES = {
-        "llama3.1:8b", "qwen3:4b", "qwen3:0.6b", "martain7r/finance-llama-8b:fp16"
-    };
+    private  String[] MODEL_NAMES = modelTags.choose();
 
     // 預設提問列表，設計為展示聊天上下文記憶特性的例子劇本
     private static final String[] ASK_DEFAULT = DataFetcher.loadPromptsFromDB();
@@ -142,7 +142,7 @@ public class QueryChatGUI extends JFrame {
         add(footerLabel, BorderLayout.SOUTH);
 
         // 預設選模型與提問欄空白
-        modelCombo.setSelectedIndex(0);
+        modelCombo.setSelectedIndex(2);
         askField.setText("");
     }
 

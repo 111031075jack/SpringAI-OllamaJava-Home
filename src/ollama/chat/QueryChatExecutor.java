@@ -19,8 +19,8 @@ import okhttp3.Response;
 public class QueryChatExecutor {
 
 	// 定義 ollama web api url
-		private static final String CHAT_WEB_API = "http://localhost:11434/api/chat";
-		
+	private static final String CHAT_WEB_API = "http://localhost:11434/api/chat";
+	
 	// 定義媒體格式(MediaType)類型為 json
 	private static final MediaType JSON = MediaType.get("application/json;charset=utf-8");
 	
@@ -63,7 +63,8 @@ public class QueryChatExecutor {
 				
 				// 將 jsonBody 物件轉為字串並形成請求內容
 				RequestBody requestBody = RequestBody.create(jsonBody.toString(), JSON);
-				
+				System.out.println("SENDING JSON = " + jsonBody.toString());
+
 				// 建立 HTTP POST 請求
 				Request request = new Request.Builder()
 						.url(CHAT_WEB_API)

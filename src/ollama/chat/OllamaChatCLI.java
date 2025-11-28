@@ -12,31 +12,34 @@ import ollama.chat.QueryChatExecutor.QueryCallback;
  * 利用 QueryChatExecutor 完成本範例
  *  */
 public class OllamaChatCLI {
+	
 	// 是否已完成
 	private static boolean isComplete = false;
-	
+	 
 	public static void main(String[] args) throws Exception {
 		Scanner scanner = new Scanner(System.in);
 		QueryChatExecutor executor = new QueryChatExecutor();
 		
-		// 選擇模型
-		String[] modelNames = {"qwen3:0.6b", "phi3:latest", "qwen2.5:0.5b"};
-		System.out.print("模型選擇(0: qwen3:0.6b, 1: phi3:latest, 2: qwen2.5:0.5b) => ");
+		// 選擇模型(1:llama3.1:8b, 2:qwen3:4b, 3:qwen3:0.6b)
+		String[] modelNames = {"llama3.1:8b", "qwen3:4b", "qwen3:0.6b", "martain7r/finance-llama-8b:fp16"};
+		System.out.print("請選擇模型(0:llama3.1:8b, 1:qwen3:4b, 2:qwen3:0.6b, 3:martain7r/finance-llama-8b:fp16) => ");
 		
 		int modelIndex = scanner.nextInt();
 		String modelName = modelNames[modelIndex];
-		
-		// 建立對話訊息列表(message)
-		List<Map<String, String>> messages = new ArrayList();
+		scanner.nextLine();
+		// 建立對話訊息列表(messages)
+		List<Map<String, String>> messages = new ArrayList<>();
 		
 		System.out.println("對話開始, 輸入 q/quit 結束.");
 		
+		
 		// 利用 QueryChatExecutor 與 AI 持續對話
 		while(true) {
-			System.out.print("\n你說:");
-			String userInput = scanner.next();
+			isComplete = false;
+			System.out.print("\n你說: ");
+			String userInput = scanner.nextLine();
 			
-			if(userInput.equalsIgnoreCase("q") || userInput.equalsIgnoreCase("quit")) {
+			if(userInput.equalsIgnoreCase("q") || userInput.equalsIgnoreCase("quit")){
 				System.out.println("對話結束");
 				break;
 			}
@@ -47,10 +50,10 @@ public class OllamaChatCLI {
 			userMessage.put("content", userInput);
 			messages.add(userMessage);
 			
-			System.out.print("Ollama 回復: ");
+			System.out.print("Ollama 回覆: ");
 			
-			// 實現 QueryChatExecutor.QueryCallBack
-			QueryCallback callback = new QueryCallback() {
+			// 實現 QueryChatExecutor.QueryCallback
+			QueryCallback queryCallback = new QueryCallback() {
 				
 				@Override
 				public void onresponseChar(char ch) {
@@ -61,40 +64,42 @@ public class OllamaChatCLI {
 				
 				@Override
 				public void onHttpError(int statusCode) {
-					System.err.println("\n HTTP 狀態錯誤:" + statusCode);
+					System.err.println("\nHTTP 請求失敗, HTTP 狀態碼: " + statusCode);	
 					
 				}
 				
 				@Override
 				public void onError(String message) {
-					System.out.println("\n錯誤: " + message);
+					System.err.println("\n執行錯誤: " + message);
 					
 				}
 				
 				@Override
 				public void onComplete() {
 					isComplete = true;
-					System.out.println(); // 完成後換行
+					System.out.println("\n查詢完成");
 					
 				}
 			};
 			
 			// 呼叫 QueryChatExecutor
-		    executor.execute(modelName, messages, callback);
-		
-		    // 等待 isComplete = true
-		    // 每隔一秒鐘檢查一次
-		    while(!isComplete == true) {
-		    	try {
-		    		Thread.sleep(1000);
-		    	}catch (Exception e) {
+			executor.execute(modelName, messages, queryCallback);
+			
+			// 等待 isComplete = true
+			// 每隔一秒鐘檢查一次
+			while(!isComplete) {
+				try {
+					Thread.sleep(1000);
+				}catch (Exception e) {
 					
 				}
-		    }
-		    
+			}
+			
 		}
-	
+		
+		
 		scanner.close();
+		
 	}
 	
 }
